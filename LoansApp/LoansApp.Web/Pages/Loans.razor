@@ -1,0 +1,45 @@
+﻿@page "/loans"
+@using LoansApp.Web.Models
+@using LoansApp.Web.Services
+@inject ApiService ApiService
+
+<h3>Gestión de Préstamos</h3>
+
+<div>
+    <input placeholder="Monto" @bind="amount" />
+    <input placeholder="Plazo" @bind="term" />
+
+    <button @onclick="CreateLoan">Crear préstamo</button>
+</div>
+
+<hr />
+
+<ul>
+    @foreach (var loan in loans)
+    {
+        <li>Monto: @loan.Amount | Plazo: @loan.Term</li>
+    }
+</ul>
+
+@code {
+    private List<LoanDto> loans = new();
+    private decimal amount;
+    private int term;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loans = await ApiService.GetLoans(1);
+    }
+
+    private async Task CreateLoan()
+    {
+        await ApiService.CreateLoan(new LoanDto
+        {
+            UserId = 1,
+            Amount = amount,
+            Term = term
+        });
+
+        loans = await ApiService.GetLoans(1);
+    }
+}

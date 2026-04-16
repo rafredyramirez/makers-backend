@@ -1,0 +1,18 @@
+﻿@page "/login"
+
+<h3>Login</h3>
+
+<input @bind="email" placeholder="Email" />
+<input @bind="password" type="password" />
+
+<button @onclick="Login">Ingresar</button>
+
+@code {
+    private string email;
+    private string password;
+
+    // private void Login()
+    // {
+    //     
+    // }
+}
