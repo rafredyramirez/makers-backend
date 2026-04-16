@@ -1,4 +1,4 @@
-﻿namespace LoansApp.Web.Models
+﻿namespace LoansApp.Application.DTOs.Auth
 {
     public class LoginDto
     {

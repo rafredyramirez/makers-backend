@@ -1,8 +1,7 @@
-﻿namespace LoansApp.Web.Models
+﻿namespace LoansApp.Application.DTOs.Loan
 {
-    public class LoanDto
+    public class RequestLoanDto
     {
-        public int UserId { get; set; }
         public decimal Amount { get; set; }
         public int Term { get; set; }
     }

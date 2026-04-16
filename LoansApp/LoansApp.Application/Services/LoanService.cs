@@ -1,77 +1,52 @@
 ﻿using LoansApp.Application.Interfaces;
 using LoansApp.Domain.Entities;
-using LoansApp.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace LoansApp.Application.Services
 {
-    public class LoanService : ILoanService
+    public class LoanService
     {
-        private readonly IAppDbContext _context;
+        private readonly ILoanRepository _loanRepo;
 
-        public LoanService(IAppDbContext context)
+        public LoanService(ILoanRepository loanRepo)
         {
-            _context = context;
+            _loanRepo = loanRepo;
         }
 
-        public async Task<Loan> RequestLoan(int userId, decimal amount, int term)
+        public async Task RequestLoan(Guid userId, decimal amount, int term)
         {
-            if (amount <= 0)
-                throw new ArgumentException("El monto debe ser mayor a 0");
+            var loan = new Loan(userId, amount, term);
 
-            if (term <= 0)
-                throw new ArgumentException("El plazo debe ser mayor a 0");
-
-            var loan = new Loan
-            {
-                UserId = userId,
-                Amount = amount,
-                Term = term,
-                Status = LoanStatus.Pending,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.Loans.Add(loan);
-            await _context.SaveChangesAsync(CancellationToken.None);
-
-            return loan;
+            await _loanRepo.AddAsync(loan);
         }
 
-        public async Task<List<Loan>> GetLoansByUser(int userId)
+        public async Task ApproveLoan(Guid loanId)
         {
-            return await _context.Loans
-                .Where(l => l.UserId == userId)
-                .ToListAsync();
-        }
-
-        public async Task ApproveLoan(int loanId)
-        {
-            var loan = await _context.Loans.FindAsync(loanId);
+            var loan = await _loanRepo.GetByIdAsync(loanId);
 
             if (loan == null)
-                throw new Exception("Préstamo no encontrado");
+                throw new ApplicationException("Préstamo no encontrado");
 
-            if (loan.Status != LoanStatus.Pending)
-                throw new Exception("El préstamo ya fue procesado");
+            loan.Approve();
 
-            loan.Status = LoanStatus.Approved;
-
-            await _context.SaveChangesAsync(CancellationToken.None);
+            await _loanRepo.UpdateAsync(loan);
         }
 
-        public async Task RejectLoan(int loanId)
+        public async Task RejectLoan(Guid loanId)
         {
-            var loan = await _context.Loans.FindAsync(loanId);
+            var loan = await _loanRepo.GetByIdAsync(loanId);
 
             if (loan == null)
-                throw new Exception("Préstamo no encontrado");
+                throw new ApplicationException("Préstamo no encontrado");
 
-            if (loan.Status != LoanStatus.Pending)
-                throw new Exception("El préstamo ya fue procesado");
+            loan.Reject();
 
-            loan.Status = LoanStatus.Rejected;
-
-            await _context.SaveChangesAsync(CancellationToken.None);
+            await _loanRepo.UpdateAsync(loan);
         }
+
+        public async Task<List<Loan>> GetUserLoans(Guid userId)
+        {
+            return await _loanRepo.GetByUserIdAsync(userId);
+        }
+
     }
 }

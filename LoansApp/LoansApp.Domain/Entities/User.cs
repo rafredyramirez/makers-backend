@@ -4,9 +4,19 @@ namespace LoansApp.Domain.Entities
 {
     public class User
     {
-        public int Id { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public LoanRols Role { get; set; } 
+        public Guid Id { get; set; }
+        public string Email { get; private set; }
+        public string PasswordHash { get; private set; }
+        public LoanRoles Role { get; private set; }
+
+        public User(string email, string passwordHash, LoanRoles role)
+        {
+            Id = Guid.NewGuid();
+            Email = email;
+            PasswordHash = passwordHash;
+            Role = role;
+        }
+
+        private User() { }
     }
 }

@@ -2,24 +2,19 @@
 @using LoansApp.Web.Services
 @inject LoanService LoanService
 
-<h3>Mis Préstamos</h3>
-
-<input @bind="amount" placeholder="Monto" />
-<input @bind="term" placeholder="Plazo" />
-
-<button @onclick="CreateLoan">Solicitar</button>
+<h3>Admin - Aprobar préstamos</h3>
 
 <ul>
     @foreach (var loan in loans)
     {
-        <li>@loan.Amount - @loan.Status</li>
+        <li>
+            @loan.Amount - @loan.Status
+            <button @onclick="() => Approve(loan.Id)">Aprobar</button>
+        </li>
     }
 </ul>
 
 @code {
-    decimal amount;
-    int term;
-
     List<LoanModel> loans = new();
 
     protected override async Task OnInitializedAsync()
@@ -27,9 +22,9 @@
         loans = await LoanService.GetLoans();
     }
 
-    async Task CreateLoan()
+    async Task Approve(Guid id)
     {
-        await LoanService.RequestLoan(amount, term);
+        await LoanService.Approve(id);
         loans = await LoanService.GetLoans();
     }
 }

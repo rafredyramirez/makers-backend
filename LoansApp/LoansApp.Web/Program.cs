@@ -1,35 +1,31 @@
+using Blazored.LocalStorage;
+using LoansApp.Web;
 using LoansApp.Web.Components;
 using LoansApp.Web.Services;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using System.Net.Http.Headers;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
+
+// Configuración base de API
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri(builder.Configuration["ApiUrl"])
+});
+
+// Servicios
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<LoanService>();
+
+// LocalStorage (para JWT)
+builder.Services.AddBlazoredLocalStorage();
+
+builder.Services.AddAuthorizationCore();
 
 var app = builder.Build();
 
-builder.Services.AddHttpClient("Api", client =>
-{
-    client.BaseAddress = new Uri("https://localhost:5001/");
-});
-
-builder.Services.AddScoped<ApiService>();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-app.UseAntiforgery();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
-app.Run();
+await app.RunAsync();

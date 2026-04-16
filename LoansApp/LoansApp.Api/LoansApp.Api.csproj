@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LoansApp.Application\LoansApp.Application.csproj" />
     <ProjectReference Include="..\LoansApp.Infrastructure\LoansApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\LoansApp.Web\LoansApp.Web.csproj" />
   </ItemGroup>
 
 </Project>

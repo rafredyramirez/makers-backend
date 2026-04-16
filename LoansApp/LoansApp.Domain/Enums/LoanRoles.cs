@@ -1,6 +1,6 @@
 ﻿namespace LoansApp.Domain.Enums
 {
-    public enum LoanRols
+    public enum LoanRoles
     {
         Admin,
         User
