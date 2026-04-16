@@ -14,7 +14,7 @@ namespace LoansApp.Api.Controllers
     {
         private readonly LoanService _loanService;
 
-        public LoanController(LoanService loanService)
+        public LoansController(LoanService loanService)
         {
             _loanService = loanService;
         }
@@ -23,7 +23,7 @@ namespace LoansApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> RequestLoan(RequestLoanDto dto)
         {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception("No se encontró el ID de usuario en el token."));
 
             await _loanService.RequestLoan(userId, dto.Amount, dto.Term);
 
@@ -34,7 +34,7 @@ namespace LoansApp.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMyLoans()
         {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception("No se encontró el ID de usuario en el token."));
 
             var loans = await _loanService.GetUserLoans(userId);
 
