@@ -1,35 +1,97 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@rendermode InteractiveServer
+@using LoansApp.Web.Services
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">LoansApp.Web</a>
+        <a class="navbar-brand" href="">LoansApp</a>
     </div>
 </div>
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <span class="bi bi-house-door-fill-nav-menu"></span> Home
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+        @if (isAuthenticated)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="loans">
+                    <span class="bi bi-cash-stack"></span> Mis Préstamos
+                </NavLink>
+            </div>
+        }
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="loans">
-                <span class="bi bi-cash"></span> Préstamos
-            </NavLink>
-        </div>
+        @if (isAdmin)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="admin">
+                    <span class="bi bi-person-badge"></span> Administración
+                </NavLink>
+            </div>
+        }
+
+        @if (!isAuthenticated)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="login">
+                    <span class="bi bi-box-arrow-in-right"></span> Login
+                </NavLink>
+            </div>
+        }
+
+        @if (isAuthenticated)
+        {
+            <div class="nav-item px-3">
+                <button class="nav-link btn btn-link text-start" @onclick="Logout">
+                    <span class="bi bi-box-arrow-right"></span> Logout
+                </button>
+            </div>
+        }
     </nav>
 </div>
 
+@code {
+    private bool isAuthenticated = false;
+    private bool isAdmin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAuthState();
+    }
+
+    private async Task LoadAuthState()
+    {
+        try
+        {
+            var token = await AuthService.GetToken();
+            isAuthenticated = !string.IsNullOrEmpty(token);
+            // isAdmin = isAuthenticated;   
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando estado de autenticación: {ex.Message}");
+            isAuthenticated = false;
+            isAdmin = false;
+        }
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.ClearToken();
+        isAuthenticated = false;
+        isAdmin = false;
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    public async Task RefreshAuthState()
+    {
+        await LoadAuthState();
+        StateHasChanged();
+    }
+}

@@ -10,7 +10,7 @@ namespace LoansApp.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class LoansController : Controller
+    public class LoansController : ControllerBase
     {
         private readonly LoanService _loanService;
 
@@ -21,23 +21,32 @@ namespace LoansApp.Api.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> RequestLoan(RequestLoanDto dto)
+        public async Task<IActionResult> RequestLoan([FromBody] RequestLoanDto dto)
         {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception("No se encontró el ID de usuario en el token."));
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = Guid.Parse(userIdClaim.Value);
 
             await _loanService.RequestLoan(userId, dto.Amount, dto.Term);
 
-            return Ok("Loan requested");
+            return Ok();
         }
 
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetMyLoans()
         {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception("No se encontró el ID de usuario en el token."));
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return Unauthorized(new { message = "No se pudo identificar al usuario" });
+            }
 
             var loans = await _loanService.GetUserLoans(userId);
-
             return Ok(loans);
         }
 
@@ -46,7 +55,7 @@ namespace LoansApp.Api.Controllers
         public async Task<IActionResult> ApproveLoan(Guid id)
         {
             await _loanService.ApproveLoan(id);
-            return Ok("Loan approved");
+            return Ok();
         }
 
         [Authorize(Roles = "Admin")]
@@ -54,7 +63,7 @@ namespace LoansApp.Api.Controllers
         public async Task<IActionResult> RejectLoan(Guid id)
         {
             await _loanService.RejectLoan(id);
-            return Ok("Loan rejected");
+            return Ok();
         }
     }
 }

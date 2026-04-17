@@ -1,5 +1,7 @@
 ﻿
 using Blazored.LocalStorage;
+using LoansApp.Web.Models;
+using System.Net.Http.Headers;
 
 namespace LoansApp.Web.Services
 {
@@ -8,37 +10,37 @@ namespace LoansApp.Web.Services
         private readonly HttpClient _http;
         private readonly ILocalStorageService _localStorage;
 
-        public AuthService(HttpClient http, ILocalStorageService localStorage)
+        public AuthService(IHttpClientFactory factory, ILocalStorageService localStorage)
         {
-            _http = http;
+            _http = factory.CreateClient("Api");
             _localStorage = localStorage;
         }
 
         public async Task<bool> Login(string email, string password)
         {
-            var response = await _http.PostAsJsonAsync("api/auth/login", new
-            {
-                email,
-                password
-            });
+            var response = await _http.PostAsJsonAsync("api/auth/login", new { email, password });
+
+            Console.WriteLine($"STATUS: {response.StatusCode}");
+
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"RESPONSE: {content}");
 
             if (!response.IsSuccessStatusCode)
                 return false;
 
-            var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
-
-            await _localStorage.SetItemAsync("token", result.Token);
+            await _localStorage.SetItemAsync("authToken", content);
 
             return true;
         }
 
-        public async Task<string> GetToken()
+        public async Task<string?> GetToken()
         {
-            return await _localStorage.GetItemAsync<string>("token");
+            return await _localStorage.GetItemAsync<string>("authToken");
         }
-    }
-    public class TokenResponse
-    {
-        public string Token { get; set; }
+
+        public async Task ClearToken()
+        {
+            await _localStorage.RemoveItemAsync("authToken");
+        }
     }
 }

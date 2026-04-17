@@ -6,26 +6,38 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Net.Http.Headers;
 
-var builder = WebAssemblyHostBuilder.CreateDefault(args);
+var builder = WebApplication.CreateBuilder(args);
 
-builder.RootComponents.Add<App>("#app");
-builder.RootComponents.Add<HeadOutlet>("head::after");
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
-// Configuración base de API
-builder.Services.AddScoped(sp => new HttpClient
+var apiUrl = builder.Configuration.GetValue<string>("ApiUrl")
+             ?? throw new InvalidOperationException("La configuración 'ApiUrl' no está definida en appsettings.json");
+
+builder.Services.AddHttpClient("Api", client =>
 {
-    BaseAddress = new Uri(builder.Configuration["ApiUrl"])
+    //client.BaseAddress = new Uri(apiUrl);
+    client.BaseAddress = new Uri(apiUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-// Servicios
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<LoanService>();
-
-// LocalStorage (para JWT)
 builder.Services.AddBlazoredLocalStorage();
 
-builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<LoanService>();                   
+
 
 var app = builder.Build();
 
-await app.RunAsync();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+}
+
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
+app.Run();

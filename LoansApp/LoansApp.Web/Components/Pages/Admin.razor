@@ -1,4 +1,5 @@
-﻿@using LoansApp.Web.Models
+﻿@page "/admin"
+@using LoansApp.Web.Models
 @using LoansApp.Web.Services
 @inject LoanService LoanService
 
@@ -24,7 +25,7 @@
 
     async Task Approve(Guid id)
     {
-        await LoanService.Approve(id);
+        await LoanService.ApproveLoan(id);
         loans = await LoanService.GetLoans();
     }
 }

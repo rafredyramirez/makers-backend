@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LoansApp.Domain\LoansApp.Domain.csproj" />
+    <ProjectReference Include="..\LoansApp.Web\LoansApp.Web.csproj" />
   </ItemGroup>
 
 </Project>

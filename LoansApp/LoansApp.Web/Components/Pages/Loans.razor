@@ -1,0 +1,58 @@
+﻿@page "/loans"
+@using LoansApp.Web.Models
+@using LoansApp.Web.Services
+@rendermode InteractiveServer
+@inject LoanService LoanService
+
+<h3>Mis Préstamos</h3>
+
+@if (loans == null)
+{
+    <p><em>Cargando préstamos...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Monto</th>
+                <th>Plazo</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var loan in loans)
+            {
+                <tr>
+                    <td>@loan.Amount</td>
+                    <td>@loan.Term</td>
+                    <td>@loan.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<LoanModel> loans = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadLoans();
+        }
+    }
+
+    private async Task LoadLoans()
+    {
+        loans = await LoanService.GetLoans() ?? new List<LoanModel>();
+        StateHasChanged();
+    }
+
+    private async Task CreateLoan(decimal amount, int term)
+    {
+        await LoanService.RequestLoan(amount, term);
+        await LoadLoans();        
+    }
+}

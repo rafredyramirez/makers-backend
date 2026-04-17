@@ -1,5 +1,8 @@
 ﻿using LoansApp.Application.Interfaces;
 using LoansApp.Domain.Entities;
+using LoansApp.Web.Models;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace LoansApp.Application.Services
 {
@@ -17,6 +20,16 @@ namespace LoansApp.Application.Services
             var loan = new Loan(userId, amount, term);
 
             await _loanRepo.AddAsync(loan);
+        }
+
+        public async Task<List<Loan>> GetUserLoans(Guid userId)
+        {
+            return await _loanRepo.GetByUserIdAsync(userId);
+        }
+
+        public async Task<Loan?> GetById(Guid loanId)
+        {
+            return await _loanRepo.GetByIdAsync(loanId);
         }
 
         public async Task ApproveLoan(Guid loanId)
@@ -42,11 +55,5 @@ namespace LoansApp.Application.Services
 
             await _loanRepo.UpdateAsync(loan);
         }
-
-        public async Task<List<Loan>> GetUserLoans(Guid userId)
-        {
-            return await _loanRepo.GetByUserIdAsync(userId);
-        }
-
     }
 }

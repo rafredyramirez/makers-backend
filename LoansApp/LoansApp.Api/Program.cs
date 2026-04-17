@@ -1,30 +1,26 @@
-using LoansApp.Application.Interfaces;
+using LoansApp.Api.Middlewares;
 using LoansApp.Application.Services;
+using LoansApp.Domain.Entities;
+using LoansApp.Domain.Enums;
+using LoansApp.Infrastructure.DependencyInjection;
 using LoansApp.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using LoansApp.Api.Middlewares;
-using LoansApp.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Infrastructure
 builder.Services.AddInfrastructure();
 
-// Application
 builder.Services.AddScoped<LoanService>();
 builder.Services.AddScoped<AuthService>();
 
-// Controllers
 builder.Services.AddControllers();
 
-// Swagger + JWT
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -53,7 +49,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// JWT
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new Exception("JWT Key not configured");
 
@@ -76,10 +71,21 @@ builder.Services.AddAuthentication("Bearer")
     });
 
 builder.Services.AddAuthorization();
-
 var app = builder.Build();
 
-// Middleware
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    db.Database.Migrate();
+
+    if (!db.Users.Any())
+    {
+        db.Users.Add(new User("usuario@test.com", "123", LoanRoles.Admin));
+        db.SaveChanges();
+    }
+}
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())

@@ -12,23 +12,21 @@ namespace LoansApp.Domain.Entities
         public LoanStatus Status { get; set; } = LoanStatus.Pending;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public Loan(Guid userId, decimal amount, int termMonths)
+        public Loan(Guid userId, decimal amount, int term)
         {
             if (amount <= 0)
                 throw new DomainException("La cantidad debe ser mayor que 0.");
 
-            if (termMonths <= 0)
+            if (term <= 0)
                 throw new DomainException("La cantidad debe ser mayor que 0.");
 
             Id = Guid.NewGuid();
             UserId = userId;
             Amount = amount;
-            Term = termMonths;
+            Term = term;
             Status = LoanStatus.Pending;
             CreatedAt = DateTime.UtcNow;
         }
-
-        private Loan() { }
 
         public void Approve()
         {
