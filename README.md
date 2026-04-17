@@ -69,3 +69,10 @@ Uso del contenedor de dependencias de .NET para:
 - Desacoplar servicios
 - Facilitar testing
 - Mejorar la escalabilidad
+
+---
+
+### 👤 Usuario Administrador
+Email: usuario@test.com
+Password: 123
+Rol: Admin
