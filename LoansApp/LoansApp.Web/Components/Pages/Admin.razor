@@ -1,31 +1,106 @@
 ﻿@page "/admin"
+@using LoansApp.Domain.Enums
 @using LoansApp.Web.Models
 @using LoansApp.Web.Services
+@rendermode InteractiveServer
 @inject LoanService LoanService
 
-<h3>Admin - Aprobar préstamos</h3>
+<h3>Administración de Préstamos</h3>
 
-<ul>
-    @foreach (var loan in loans)
-    {
-        <li>
-            @loan.Amount - @loan.Status
-            <button @onclick="() => Approve(loan.Id)">Aprobar</button>
-        </li>
-    }
-</ul>
+@if (loans == null)
+{
+    <p><em>Cargando préstamos...</em></p>
+}
+else if (!loans.Any())
+{
+    <p>No hay préstamos registrados.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Monto</th>
+                <th>Plazo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var loan in loans)
+            {
+                <tr>
+                    <td>@loan.Amount</td>
+                    <td>@loan.Term</td>
+                    <td>@loan.Status</td>
+                    <td>
+                        @if (loan.Status == LoanStatus.Pending)
+                        {
+                            <button class="btn btn-success btn-sm me-2"
+                                    @onclick="() => Approve(loan.Id)">
+                                ✔ Aprobar
+                            </button>
+
+                            <button class="btn btn-danger btn-sm"
+                                    @onclick="() => Reject(loan.Id)">
+                                ✖ Rechazar
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin acciones</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
-    List<LoanModel> loans = new();
+    private List<LoanModel> loans = new();
+    private bool _loaded = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        loans = await LoanService.GetLoans();
+        if (firstRender && !_loaded)
+        {
+            _loaded = true;
+            await LoadLoans();
+            StateHasChanged();
+        }
     }
 
-    async Task Approve(Guid id)
+    private async Task LoadLoans()
+    {
+        loans = await LoanService.GetAllLoans() ?? new List<LoanModel>();
+    }
+
+    // 🔥 Acción aprobar
+    private async Task Approve(Guid id)
     {
         await LoanService.ApproveLoan(id);
-        loans = await LoanService.GetLoans();
+        await LoadLoans();
+        StateHasChanged();
+    }
+
+    // 🔥 Acción rechazar
+    private async Task Reject(Guid id)
+    {
+        await LoanService.RejectLoan(id);
+        await LoadLoans();
+        StateHasChanged();
+    }
+
+    // 🎨 Estilos dinámicos
+    private string GetStatusBadge(LoanStatus status)
+    {
+        return status switch
+        {
+            LoanStatus.Pending => "badge bg-warning text-dark",
+            LoanStatus.Approved => "badge bg-success",
+            LoanStatus.Rejected => "badge bg-danger",
+            _ => "badge bg-secondary"
+        };
     }
 }

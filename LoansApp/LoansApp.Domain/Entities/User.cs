@@ -16,7 +16,5 @@ namespace LoansApp.Domain.Entities
             PasswordHash = passwordHash;
             Role = role;
         }
-
-        private User() { }
     }
 }

@@ -1,4 +1,5 @@
-﻿using LoansApp.Web.Models;
+﻿using LoansApp.Domain.Entities;
+using LoansApp.Web.Models;
 using System.Net.Http.Headers;
 
 namespace LoansApp.Web.Services
@@ -18,11 +19,11 @@ namespace LoansApp.Web.Services
         {
             var token = await _auth.GetToken();
 
-            Console.WriteLine($"TOKEN ENVIADO: {token ?? "NULL"}");
-
             if (!string.IsNullOrEmpty(token))
             {
                 _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                //token = token.Trim().Trim('"');   // Limpieza extra
+                //_http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
             else
             {
@@ -53,6 +54,15 @@ namespace LoansApp.Web.Services
         {
             await AddAuthHeaderAsync();
             await _http.PostAsync($"api/loans/{id}/reject", null);
+        }
+
+        public async Task<List<LoanModel>> GetAllLoans()
+        {
+            await AddAuthHeaderAsync();
+
+            var loans = await _http.GetFromJsonAsync<List<LoanModel>>("api/loans/all");
+
+            return loans ?? new List<LoanModel>();
         }
     }
 }

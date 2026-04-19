@@ -24,8 +24,8 @@ builder.Services.AddHttpClient("Api", client =>
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<LoanService>();                   
-
+builder.Services.AddScoped<LoanService>();
+builder.Services.AddScoped<AuthStateService>();
 
 var app = builder.Build();
 

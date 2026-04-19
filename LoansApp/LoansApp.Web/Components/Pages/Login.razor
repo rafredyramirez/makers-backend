@@ -1,8 +1,12 @@
 ﻿@page "/login"
 @rendermode InteractiveServer
 @using LoansApp.Web.Services
+@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+
 @inject AuthService AuthService
 @inject NavigationManager Nav
+@inject AuthStateService AuthStateService
 
 <h3>Login</h3>
 
@@ -18,19 +22,52 @@
     private async Task HandleLogin()
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-        {
             return;
-        }
 
         var success = await AuthService.Login(email.Trim(), password);
 
         if (success)
         {
-            Nav.NavigateTo("/loans", forceLoad: true);
+            var token = await AuthService.GetToken();
+            bool isAdmin = IsUserAdmin(token ?? "");
+
+            // Redirigimos según el rol del usuario
+            if (isAdmin)
+            {
+                Nav.NavigateTo("/admin", forceLoad: false);
+            }
+            else
+            {
+                Nav.NavigateTo("/loans", forceLoad: false);
+            }
         }
         else
         {
-            Nav.NavigateTo("/error");
+            Console.WriteLine("Login fallido: Credenciales incorrectas");
+            // Aquí puedes mostrar un mensaje de error al usuario más adelante
+        }
+    }
+
+    private bool IsUserAdmin(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+            return false;
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+
+            var roleClaim = jwt.Claims.FirstOrDefault(c =>
+                c.Type == "role" ||
+                c.Type.EndsWith("/role") ||
+                c.Type == ClaimTypes.Role);
+
+            return roleClaim?.Value?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

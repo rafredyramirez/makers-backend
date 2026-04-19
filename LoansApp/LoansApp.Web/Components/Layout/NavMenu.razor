@@ -1,5 +1,7 @@
 ﻿@rendermode InteractiveServer
 @using LoansApp.Web.Services
+@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 
@@ -60,9 +62,12 @@
     private bool isAuthenticated = false;
     private bool isAdmin = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LoadAuthState();
+        if (firstRender)
+        {
+            await LoadAuthState();
+        }
     }
 
     private async Task LoadAuthState()
@@ -70,14 +75,50 @@
         try
         {
             var token = await AuthService.GetToken();
-            isAuthenticated = !string.IsNullOrEmpty(token);
-            // isAdmin = isAuthenticated;   
+
+            // Verificamos si el token existe y no está vacío
+            isAuthenticated = !string.IsNullOrWhiteSpace(token);
+
+            if (!isAuthenticated)
+            {
+                isAdmin = false;
+                return;
+            }
+
+            isAdmin = IsUserInRole(token!, "Admin");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error cargando estado de autenticación: {ex.Message}");
+            Console.WriteLine($"Error en LoadAuthState: {ex.Message}");
             isAuthenticated = false;
             isAdmin = false;
+        }
+    }
+
+    private bool IsUserInRole(string? token, string role)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            return false;
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+
+            if (!handler.CanReadToken(token))
+                return false;
+
+            var jwt = handler.ReadJwtToken(token);
+
+            var roleClaim = jwt.Claims.FirstOrDefault(c =>
+                c.Type == "role" ||
+                c.Type.EndsWith("/role") ||
+                c.Type == ClaimTypes.Role);
+
+            return roleClaim?.Value?.Equals(role, StringComparison.OrdinalIgnoreCase) == true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -86,6 +127,7 @@
         await AuthService.ClearToken();
         isAuthenticated = false;
         isAdmin = false;
+
         Navigation.NavigateTo("/login", forceLoad: true);
     }
 

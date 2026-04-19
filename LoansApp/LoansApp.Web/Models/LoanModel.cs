@@ -1,10 +1,12 @@
-﻿namespace LoansApp.Web.Models
+﻿using LoansApp.Domain.Enums;
+
+namespace LoansApp.Web.Models
 {
     public class LoanModel
     {
         public Guid Id { get; set; }
         public decimal Amount { get; set; }
         public int Term { get; set; }
-        public string Status { get; set; }
+        public LoanStatus Status { get; set; }
     }
 }

@@ -8,5 +8,7 @@ namespace LoansApp.Application.Interfaces
         Task<Loan> GetByIdAsync(Guid id);
         Task<List<Loan>> GetByUserIdAsync(Guid userId);
         Task UpdateAsync(Loan loan);
+        Task<bool> HasPendingLoanAsync(Guid userId);
+        Task<List<Loan>> GetAllAsync();
     }
 }

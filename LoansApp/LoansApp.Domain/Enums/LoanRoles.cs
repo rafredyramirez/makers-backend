@@ -2,7 +2,7 @@
 {
     public enum LoanRoles
     {
-        Admin,
-        User
+        Admin = 0,
+        User = 1,
     }
 }

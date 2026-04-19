@@ -31,7 +31,7 @@ namespace LoansApp.Domain.Entities
         public void Approve()
         {
             if (Status != LoanStatus.Pending)
-                throw new Exception("Préstamo ya procesado");
+                throw new DomainException("Préstamo ya procesado");
 
             Status = LoanStatus.Approved;
         }
@@ -39,7 +39,7 @@ namespace LoansApp.Domain.Entities
         public void Reject()
         {
             if (Status != LoanStatus.Pending)
-                throw new Exception("Préstamo ya procesado");
+                throw new DomainException("Préstamo ya procesado");
 
             Status = LoanStatus.Rejected;
         }

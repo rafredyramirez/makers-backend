@@ -1,5 +1,6 @@
 ﻿using LoansApp.Application.Interfaces;
 using LoansApp.Domain.Entities;
+using LoansApp.Domain.Enums;
 using LoansApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,10 +34,23 @@ namespace LoansApp.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<bool> HasPendingLoanAsync(Guid userId)
+        {
+            return await _context.Loans
+                .AsNoTracking()
+                .AnyAsync(l => l.UserId == userId &&
+                               l.Status == LoanStatus.Pending);
+        }
+
         public async Task UpdateAsync(Loan loan)
         {
             _context.Loans.Update(loan);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Loan>> GetAllAsync()
+        {
+            return await _context.Loans.ToListAsync();
         }
     }
 }

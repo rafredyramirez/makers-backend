@@ -7,6 +7,7 @@ using LoansApp.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,23 +25,32 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header
+        Title = "LoansApp API",
+        Version = "v1"
     });
 
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    // Definir el esquema de seguridad Bearer
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header usando Bearer.\n\nEjemplo: \"Bearer eyJhbGciOi...\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
+    });
+
+    // Aplicar el requisito de seguridad a todos los endpoints que tengan [Authorize]
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new OpenApiSecurityScheme
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                Reference = new OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
             },
@@ -49,24 +59,39 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new Exception("JWT Key not configured");
+//var jwtKey = builder.Configuration["Jwt:Key"]
+//    ?? throw new Exception("JWT Key not configured");
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
+// === AUTENTICACIÓN JWT ===
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        var key = Encoding.UTF8.GetBytes(jwtKey);
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
             ValidateLifetime = true,
-
+            ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "")),
+            ClockSkew = TimeSpan.Zero
+        };
+
+        // Opcional: logs para debug
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token validated successfully");
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -81,7 +106,8 @@ using (var scope = app.Services.CreateScope())
 
     if (!db.Users.Any())
     {
-        db.Users.Add(new User("usuario@test.com", "123", LoanRoles.Admin));
+        db.Users.Add(new User("admin@test.com", "123", LoanRoles.Admin));
+        db.Users.Add(new User("user@test.com", "123", LoanRoles.User));
         db.SaveChanges();
     }
 }

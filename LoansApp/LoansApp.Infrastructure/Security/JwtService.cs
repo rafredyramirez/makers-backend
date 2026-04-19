@@ -44,7 +44,7 @@ namespace LoansApp.Infrastructure.Security
                 expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: credentials
             );
-            Console.WriteLine($"JWT KEY USED: {_config["Jwt:Key"]}");
+       
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }

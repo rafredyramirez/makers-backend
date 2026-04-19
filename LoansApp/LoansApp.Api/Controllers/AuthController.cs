@@ -17,10 +17,28 @@ namespace LoansApp.Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var token = await _authService.Login(dto.Email, dto.Password);
-            return Ok(new { token });
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var token = await _authService.Login(dto.Email, dto.Password);
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { message = "Credenciales inválidas" });
+                }
+
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Error interno del servidor: {ex.Message}" });
+            }
         }
     }
 }
