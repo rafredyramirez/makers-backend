@@ -73,6 +73,12 @@ Uso del contenedor de dependencias de .NET para:
 ---
 
 ### 👤 Usuario Administrador
-Email: usuario@test.com
+
+Email: admin@test.com
 Password: 123
-Rol: Admin
+Rol: Administrador 
+|
+Email: user@test.com
+Password: 123
+Rol: Usuario
+
