@@ -59,9 +59,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-//var jwtKey = builder.Configuration["Jwt:Key"]
-//    ?? throw new Exception("JWT Key not configured");
-
 // === AUTENTICACIÓN JWT ===
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

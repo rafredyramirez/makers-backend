@@ -22,8 +22,6 @@ namespace LoansApp.Web.Services
             if (!string.IsNullOrEmpty(token))
             {
                 _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                //token = token.Trim().Trim('"');   // Limpieza extra
-                //_http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
             else
             {

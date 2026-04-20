@@ -6,4 +6,7 @@
     <Project Path="LoansApp.Infrastructure/LoansApp.Infrastructure.csproj" />
     <Project Path="LoansApp.Web/LoansApp.Web.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="LoansApp.Tests/LoansApp.Tests.csproj" Id="e0713ef7-c145-40d4-a845-ce80dadf511f" />
+  </Folder>
 </Solution>

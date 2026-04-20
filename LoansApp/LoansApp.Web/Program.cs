@@ -16,7 +16,6 @@ var apiUrl = builder.Configuration.GetValue<string>("ApiUrl")
 
 builder.Services.AddHttpClient("Api", client =>
 {
-    //client.BaseAddress = new Uri(apiUrl);
     client.BaseAddress = new Uri(apiUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 });

@@ -76,6 +76,14 @@ namespace LoansApp.Api.Controllers
             return Ok(new { message = "Préstamo rechazado correctamente" });
         }
 
+        // 5. Ver solicitud préstamos (Solo Admin)
+        [Authorize(Roles = "Admin")]
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllLoans()
+        {
+            var loans = await _loanService.GetAllLoans();
+            return Ok(loans);
+        }
         // Método auxiliar para obtener el UserId de forma segura
         private Guid GetCurrentUserId()
         {
@@ -85,14 +93,6 @@ namespace LoansApp.Api.Controllers
                 return Guid.Empty;
 
             return userId;
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpGet("all")]
-        public async Task<IActionResult> GetAllLoans()
-        {
-            var loans = await _loanService.GetAllLoans();
-            return Ok(loans);
         }
     }
 }

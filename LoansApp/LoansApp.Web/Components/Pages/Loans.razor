@@ -37,7 +37,7 @@ else
     </table>
 }
 
-<!-- 🔥 MODAL -->
+<!-- MODAL -->
 @if (showModal)
 {
     <div class="modal-backdrop fade show"></div>
@@ -95,7 +95,6 @@ else
 
     private async Task LoadLoans()
     {
-        // loans = await LoanService.GetLoans() ?? new List<LoanModel>();
         loans = await LoanService.GetLoans();
         StateHasChanged();
     }

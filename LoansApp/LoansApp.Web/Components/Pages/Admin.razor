@@ -76,7 +76,7 @@ else
         loans = await LoanService.GetAllLoans() ?? new List<LoanModel>();
     }
 
-    // 🔥 Acción aprobar
+    // Acción aprobar
     private async Task Approve(Guid id)
     {
         await LoanService.ApproveLoan(id);
@@ -84,7 +84,7 @@ else
         StateHasChanged();
     }
 
-    // 🔥 Acción rechazar
+    // Acción rechazar
     private async Task Reject(Guid id)
     {
         await LoanService.RejectLoan(id);
@@ -92,7 +92,7 @@ else
         StateHasChanged();
     }
 
-    // 🎨 Estilos dinámicos
+    // Estilos dinámicos
     private string GetStatusBadge(LoanStatus status)
     {
         return status switch
